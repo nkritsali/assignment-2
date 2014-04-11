@@ -291,6 +291,34 @@ public class Graph {
         				edges.put(vertexTo,weight);
         				weightedEdges.put(vertexFrom, edges);            		
         			}
+        			
+        			
+        			
+        			
+        			vertexFrom = Integer.valueOf(s[1]);
+        			vertexTo = Integer.valueOf(s[0]);
+        			if (s.length==3)
+        				weight = Integer.valueOf(s[2]);
+        			else
+        				weight = 1;
+        				
+        			if (graphUndirected.containsKey(vertexFrom)){	// if there is already the node in the graphMap the append the node's list of directions to next nodes
+        				graphUndirected.get(vertexFrom).add(vertexTo);        				        			
+        			}
+        			else{								// otherwise create a new node node in the graphMap and set the node's list of directions to next nodes
+            			verticesTo = new ArrayList<Integer>();	// remove the added value to be zero again for next use        				
+            			verticesTo.add(vertexTo);        				
+        				graphUndirected.put(vertexFrom, verticesTo);        				        				
+        			}
+        			
+        			if (weightedEdges.containsKey(vertexFrom)){	// if there is already the node in the graphMap the append the node's list of directions to next nodes
+        				weightedEdges.get(vertexFrom).put(vertexTo, weight);
+        			}
+        			else{
+        				edges = new HashMap<Integer,Integer>();
+        				edges.put(vertexTo,weight);
+        				weightedEdges.put(vertexFrom, edges);            		
+        			}
         		}
             }
         	else{        		
@@ -334,8 +362,16 @@ public class Graph {
             		System.out.print(j+" ("+weightedEdges.get(i).get(j)+"), ");
             	}            	
             	System.out.println("]}");
-            }
-*/            
+        }
+       	for (int i : graphUndirected.keySet()){
+        	System.out.print("\n{"+ i+", [");
+        	for (int j : graphUndirected.get(i)){
+        		System.out.print(j+" ("+weightedEdges.get(i).get(j)+"), ");
+        	}            	
+        	System.out.println("]}");
+    }
+*/
+            
 // FUNCTION CALLS 			
             argn = 0;
 			if (args[argn].trim().equals("-u")){
@@ -354,10 +390,16 @@ public class Graph {
 				}
 			}
 			else if (args[argn].trim().equals("-a")){
-				shortestPathsResult = graph.shortestPathAlgorithm(graphDirected,weightedEdges,start);						
+				if (directed)
+					shortestPathsResult = graph.shortestPathAlgorithm(graphDirected,weightedEdges,start);						
+				else
+					shortestPathsResult = graph.shortestPathAlgorithm(graphUndirected,weightedEdges,start);							
 			}
 			else if (args[argn].trim().equals("-d")){
-				diameter = graph.graphDiameterAlgorithm(graphDirected,weightedEdges,start);						
+				if (directed)
+					diameter = graph.graphDiameterAlgorithm(graphDirected,weightedEdges,start);						
+				else
+					diameter = graph.graphDiameterAlgorithm(graphUndirected,weightedEdges,start);						
 			}
 
 			
@@ -384,7 +426,7 @@ public class Graph {
 
 					}
 					else{
-						System.out.print("\nDistance matrix\n[");
+						System.out.print("\nDistance matrix\n");
 
 						resultPred  = new int[shortestPathsResult.get(i).length][shortestPathsResult.get(i).length];
 						for(int j=0 ; j<shortestPathsResult.get(i).length ; j++){
