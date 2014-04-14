@@ -14,6 +14,7 @@ import java.util.Queue;
 
 
 public class Graph {
+	private static int maxValue = 100000; 					// we suppose a big number like 100000 for the max value in weighted graph
 	
 	public static Map<Integer, Integer> sortByValue(Map<Integer, Integer> map) {
         List<Map.Entry<Integer, Integer>> list = new LinkedList<Map.Entry<Integer, Integer>>(map.entrySet());
@@ -62,12 +63,13 @@ public class Graph {
 //		Queue<Integer> pq = new PriorityQueue<Integer>();
 		
 		int u;
-		
-//		System.out.println("Graph Nodes are: "+graph.keySet());
+
+
+		//		System.out.println("Graph Nodes are: "+graph.keySet());
 		for (Integer v : graph.keySet()){
 			pred.add(v, -1);
 			if (v != s){				
-				dist.add(v,10000);					// we suppose a big number like 10000
+				dist.add(v,maxValue);
 			}
 			else{
 				dist.add(v,0);				
@@ -117,25 +119,33 @@ public class Graph {
 	 * @param s
 	 * @return shortestPathsResult
 	 */
-	public ArrayList<int[][]> shortestPathAlgorithm (HashMap<Integer, ArrayList<Integer>> graph, HashMap<Integer,HashMap<Integer,Integer>> weightedEdges, Integer s) {
+	public ArrayList<ArrayList<ArrayList<Integer>>> shortestPathAlgorithm (HashMap<Integer, ArrayList<Integer>> graph, HashMap<Integer,HashMap<Integer,Integer>> weightedEdges, Integer s) {
 	/**	Input: G = (V,E), a graph and a starting node s
 		Output: (pred,dist): pred is an array of size |V| X |V| such that pred[i][j] is
 			the predecessor of node j in the shortest path from i to j; dist is an
 			array of size |V| X |V| such that dist[i][j] is the length of the
 			shortest path calculated from node i to j
 	 */		
-		ArrayList<int[][]> shortestPathsResult = new ArrayList<int[][]>();
+		ArrayList<ArrayList<ArrayList<Integer>>> shortestPathsResult = new ArrayList<ArrayList<ArrayList<Integer>>>();
 		ArrayList<ArrayList<Integer>> dijkstraResult = new ArrayList<ArrayList<Integer>>();
-		int[][] dist = new int[graph.size()][graph.size()];
-		int[][] pred = new int[graph.size()][graph.size()];	
+		
+		ArrayList<ArrayList<Integer>> pred = new ArrayList<ArrayList<Integer>>();
+		ArrayList<ArrayList<Integer>> dist = new ArrayList<ArrayList<Integer>>();
+		ArrayList<Integer> predRows = new ArrayList<Integer>();
+		ArrayList<Integer> distRows = new ArrayList<Integer>();
 		
 
 
 		for (Integer u : graph.keySet()){
+			distRows = new ArrayList<Integer>();
+			predRows = new ArrayList<Integer>();
+
 			for (Integer v : graph.keySet()){
-				pred[u][v] = -1;
-				dist[u][v] = 0;
+				predRows.add(v, -1);
+				distRows.add(v, 0);
 			}
+			pred.add(u, predRows);
+			dist.add(u, distRows);
 		}
 		
 		for (Integer u : graph.keySet()){
@@ -146,9 +156,9 @@ public class Graph {
 			for (int i=0 ; i<dijkstraResult.size() ; i++){
 				for (int j=0 ; j<dijkstraResult.get(i).size() ; j++){
 					if (i==0)
-						pred[u][j] = dijkstraResult.get(i).get(j);
+						pred.get(u).set(j, dijkstraResult.get(i).get(j));
 					else
-						dist[u][j] = dijkstraResult.get(i).get(j);
+						dist.get(u).set(j, dijkstraResult.get(i).get(j));
 				}
 			}	
 		}
@@ -217,9 +227,9 @@ public class Graph {
 			Graph graph = new Graph();
 			
 			ArrayList<ArrayList<Integer>> dijkstraResult = new ArrayList<ArrayList<Integer>>();
-			ArrayList<int[][]> shortestPathsResult = new ArrayList<int[][]>();
-			int[][] resultDist;
-			int[][] resultPred;
+			ArrayList<ArrayList<ArrayList<Integer>>> shortestPathsResult = new ArrayList<ArrayList<ArrayList<Integer>>>();
+			ArrayList<ArrayList<Integer>> resultPred = new ArrayList<ArrayList<Integer>>();
+			ArrayList<ArrayList<Integer>> resultDist = new ArrayList<ArrayList<Integer>>();
 			Integer diameter = 0;
 			
 			Integer vertexFrom = null;
@@ -407,40 +417,20 @@ public class Graph {
 // RESULTS PRINTING			
 			if (args[argn].trim().equals("-a")){
 				for (int i=0 ; i<shortestPathsResult.size() ; i++){
-					if (i==0){
+					if (i==0)
 						System.out.println("\nPredecessor matrix");
+					else
+						System.out.println("\nDistance matrix");
 						
-						resultDist  = new int[shortestPathsResult.get(i).length][shortestPathsResult.get(i).length];
-						for(int j=0 ; j<shortestPathsResult.get(i).length ; j++){
-							resultDist[j] = shortestPathsResult.get(i)[j];
-
-							System.out.print("[");
-							
-							for(int k=0 ; k<resultDist[j].length ; k++){
-//								System.out.println("dist["+j+"]["+k+"] = "+resultDist[j][k]);
-								System.out.print(resultDist[j][k]+", ");
-								}						
-							
-							System.out.println("]");
-						}
-
-					}
-					else{
-						System.out.print("\nDistance matrix\n");
-
-						resultPred  = new int[shortestPathsResult.get(i).length][shortestPathsResult.get(i).length];
-						for(int j=0 ; j<shortestPathsResult.get(i).length ; j++){
-							resultPred[j] = shortestPathsResult.get(i)[j];
-
-							System.out.print("[");
-
-							for(int k=0 ; k<resultPred[j].length ; k++){
-//								System.out.println("dist["+j+"]["+k+"] = "+resultPred[j][k]);
-								System.out.print(resultPred[j][k]+", ");
+					for(int j=0 ; j<shortestPathsResult.get(i).size() ; j++){
+						System.out.print("[");
+						for(int k=0 ; k<shortestPathsResult.get(i).get(j).size() ; k++){
+							if (shortestPathsResult.get(i).get(j).get(k) != maxValue)
+								System.out.print(shortestPathsResult.get(i).get(j).get(k)+", ");
+							else
+								System.out.print("NoDirectedEdge@Node, ");								
 						}						
-							
-							System.out.println("]");
-						}
+						System.out.println("]");
 					}
 				}
 			}
@@ -455,12 +445,10 @@ public class Graph {
 						System.out.print("\nDistance matrix\n[");
 
 					for (int j=0 ; j<dijkstraResult.get(i).size() ; j++){
-						if (i==0)
-//							System.out.println("pred["+j+"] = "+dijkstraResult.get(i).get(j));
+						if (dijkstraResult.get(i).get(j) != maxValue)
 							System.out.print(dijkstraResult.get(i).get(j)+", ");
 						else
-//							System.out.println("dist["+j+"] = "+dijkstraResult.get(i).get(j));
-							System.out.print(dijkstraResult.get(i).get(j)+", ");
+							System.out.print("NoDirectedEdge@Node, ");															
 					}
 					if (i==0)
 						System.out.println("]");
